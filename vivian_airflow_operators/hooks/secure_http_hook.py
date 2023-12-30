@@ -1,7 +1,7 @@
 import json
 import requests
 
-from airflow.hooks.http import HttpHook
+from airflow.hooks.http_hook import HttpHook
 from airflow.exceptions import AirflowException
 from airflow.utils.decorators import apply_defaults
 
