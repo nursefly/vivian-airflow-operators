@@ -18,6 +18,10 @@ class SecureHttpHook(HttpHook):
     
     def _get_credentials(self):
         conn = self.get_conn()
+
+        from pprint import pprint
+        pprint(vars(conn))
+
         self.password = conn.password
 
     def _get_response(self, url: str, method: str, headers: dict[str, str]) -> dict:
