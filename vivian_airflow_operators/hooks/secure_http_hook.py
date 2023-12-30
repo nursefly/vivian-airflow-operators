@@ -1,12 +1,12 @@
 import json
 import requests
 
-from airflow.hooks.base_hook import BaseHook
+from airflow.hooks.http import HttpHook
 from airflow.exceptions import AirflowException
 from airflow.utils.decorators import apply_defaults
 
 
-class SecureHttpHook(BaseHook):
+class SecureHttpHook(HttpHook):
     @apply_defaults
     def __init__(self, http_conn_id: str=None, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -17,7 +17,7 @@ class SecureHttpHook(BaseHook):
         self.http_conn_id = http_conn_id
     
     def _get_credentials(self):
-        conn = BaseHook(None).get_connection(conn_id=self.http_conn_id)
+        conn = HttpHook(None).get_connection(conn_id=self.http_conn_id)
         self.password = conn.password
 
     def _get_response(self, url: str, method: str, headers: dict[str, str]) -> dict:
