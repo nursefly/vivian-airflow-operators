@@ -15,7 +15,7 @@ class StitchHook(SecureHttpHook):
     
     def _trigger_extraction(self, source_id: str, client_id: str, base_url: str, headers: dict[str, str]) -> dict:
         url = (f'{base_url}/sources/{source_id}/sync')
-        dict_data = self._get_response('POST', url, headers=headers)
+        dict_data = self._get_response(url, 'POST', headers=headers)
         error = dict_data.get('error', None)
         job_name = dict_data.get('job_name', None)
 
