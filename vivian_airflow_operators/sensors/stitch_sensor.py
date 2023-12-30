@@ -10,7 +10,7 @@ from ..hooks.stitch_hook import StitchHook
 
 class StitchMonitorSourceSensor(BaseSensorOperator):
     @apply_defaults
-    def __init__(self, source_id: str=None, client_id: str=None, connection_id: str=None, 
+    def __init__(self, source_id: str=None, client_id: str=None, http_conn_id: str=None, 
                  api_version: str='v4', sleep_time: int=300, timeout: int=86400, 
                  *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -19,24 +19,24 @@ class StitchMonitorSourceSensor(BaseSensorOperator):
             raise AirflowException('source_id is required')
         if client_id is None:
             raise AirflowException('client_id is required')
-        if connection_id is None:
-            raise AirflowException('connection_id is required')
+        if http_conn_id is None:
+            raise AirflowException('http_conn_id is required')
 
         self.source_id = source_id
         self.client_id = client_id
-        self.connection_id = connection_id
+        self.http_conn_id = http_conn_id
         self.base_url = f'https://api.stitchdata.com/{api_version}'
         self.sleep_time = sleep_time
         self.timeout = timeout
 
     def _get_password(self, context):
-        self.stitch_hook = StitchHook(connection_id=self.connection_id)
+        self.stitch_hook = StitchHook(http_conn_id=self.http_conn_id)
         self.stitch_hook._get_credentials()
 
     def poke(self, context):
         tic = datetime.now()
 
-        self.stitch_hook = StitchHook(connection_id=self.connection_id)
+        self.stitch_hook = StitchHook(http_conn_id=self.http_conn_id)
         self.stitch_hook._get_credentials()
         self.headers = {
             'Authorization': 'Bearer ' + self.stitch_hook.password,

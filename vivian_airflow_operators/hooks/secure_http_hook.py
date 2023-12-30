@@ -8,16 +8,16 @@ from airflow.utils.decorators import apply_defaults
 
 class SecureHttpHook(BaseHook):
     @apply_defaults
-    def __init__(self, connection_id: str=None, *args, **kwargs) -> None:
+    def __init__(self, http_conn_id: str=None, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
-        if connection_id is None:
-            raise AirflowException('connection_id is required')
+        if http_conn_id is None:
+            raise AirflowException('http_conn_id is required')
         
-        self.connection_id = connection_id
+        self.http_conn_id = http_conn_id
     
     def _get_credentials(self):
-        conn = BaseHook(None).get_connection(conn_id=self.connection_id)
+        conn = BaseHook(None).get_connection(conn_id=self.http_conn_id)
         self.password = conn.password
 
     def _get_response(self, url: str, method: str, headers: dict[str, str]) -> dict:
