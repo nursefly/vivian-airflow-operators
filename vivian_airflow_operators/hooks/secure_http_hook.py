@@ -1,5 +1,6 @@
 import json
 import requests
+import logging
 
 from airflow.hooks.http_hook import HttpHook
 from airflow.exceptions import AirflowException
@@ -19,8 +20,7 @@ class SecureHttpHook(HttpHook):
     def _get_credentials(self):
         conn = self.get_conn()
 
-        from pprint import pprint
-        pprint(vars(conn))
+        logging.info(vars(conn))
 
         self.password = conn.password
 
