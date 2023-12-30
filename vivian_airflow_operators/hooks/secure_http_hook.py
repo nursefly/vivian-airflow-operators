@@ -17,7 +17,7 @@ class SecureHttpHook(HttpHook):
         self.http_conn_id = http_conn_id
     
     def _get_credentials(self):
-        conn = HttpHook(self.http_conn_id).get_connection()
+        conn = HttpHook(self.http_conn_id).get_conn()
         self.password = conn.password
 
     def _get_response(self, url: str, method: str, headers: dict[str, str]) -> dict:
