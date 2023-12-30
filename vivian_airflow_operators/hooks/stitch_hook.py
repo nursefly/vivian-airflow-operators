@@ -5,7 +5,7 @@ from datetime import datetime
 from airflow.exceptions import AirflowException
 from airflow.utils.decorators import apply_defaults
 
-from secure_http_hook import SecureHttpHook
+from .secure_http_hook import SecureHttpHook
 
 
 class StitchHook(SecureHttpHook):
