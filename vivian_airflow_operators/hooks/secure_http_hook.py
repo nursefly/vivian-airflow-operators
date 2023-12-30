@@ -20,7 +20,7 @@ class SecureHttpHook(HttpHook):
     def _get_credentials(self):
         conn = self.get_conn()
 
-        logging.info(vars(conn))
+        logging.info(vars(conn.auth))
 
         self.password = conn.password
 
