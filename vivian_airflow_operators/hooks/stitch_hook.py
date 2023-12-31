@@ -25,7 +25,7 @@ class StitchHook(BaseHook):
         self.headers = conn.extra_dejson
 
     def _get_response(self, url: str, method: str) -> dict:
-        response = requests.request(method, url, headers=self.headers)
+        response = requests.request(method, url)
         response.raise_for_status()
         response_data = response.text
         dict_data = json.loads(response_data)
@@ -35,7 +35,7 @@ class StitchHook(BaseHook):
     def _trigger_extraction(self, source_id: str, client_id: str) -> dict:
         self._get_credentials()
         url = (f'{self.host}/sources/{source_id}/sync')
-        dict_data = self._get_response(url, 'POST', headers=self.headers)
+        dict_data = self._get_response(url, 'POST')
         error = dict_data.get('error', None)
         job_name = dict_data.get('job_name', None)
 
