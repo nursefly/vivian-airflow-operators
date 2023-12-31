@@ -33,7 +33,7 @@ class StitchHook(BaseHook):
         return dict_data
     
     def _trigger_extraction(self, source_id: str, client_id: str) -> dict:
-        self._get_credentials(conn_id=self.conn_id)
+        self._get_credentials()
         url = (f'{self.host}/sources/{source_id}/sync')
         dict_data = self._get_response(url, 'POST', headers=self.headers)
         error = dict_data.get('error', None)
