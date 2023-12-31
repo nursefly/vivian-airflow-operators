@@ -25,7 +25,7 @@ class StitchHook(BaseHook):
         self.headers = conn.extra_dejson
 
     def _get_response(self, url: str, method: str) -> dict:
-        response = requests.request(method, url)
+        response = requests.request(method, url, headers=self.headers)
         response.raise_for_status()
         response_data = response.text
         dict_data = json.loads(response_data)
@@ -54,7 +54,7 @@ class StitchHook(BaseHook):
         id_found = False
 
         while (datetime.now() - start_time).seconds < timeout:
-            dict_data = self._get_response(url, 'GET', headers=self.headers)
+            dict_data = self._get_response(url, 'GET')
 
             for item in dict_data['data']:
                 if str(item['source_id']) == source_id:
