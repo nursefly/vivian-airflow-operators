@@ -1,21 +1,41 @@
+import json
 import logging
+import requests
 import time
 from datetime import datetime
 
 from airflow.exceptions import AirflowException
 from airflow.utils.decorators import apply_defaults
+from airflow.hooks.base import BaseHook
 
-from .secure_http_hook import SecureHttpHook
 
-
-class StitchHook(SecureHttpHook):
+class StitchHook(BaseHook):
     @apply_defaults
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, conn_id: str, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+
+        if conn_id is None:
+            raise AirflowException('conn_id is required')
+        
+        self.conn_id = conn_id
     
-    def _trigger_extraction(self, source_id: str, client_id: str, base_url: str, headers: dict[str, str]) -> dict:
-        url = (f'{base_url}/sources/{source_id}/sync')
-        dict_data = self._get_response(url, 'POST', headers=headers)
+    def _get_credentials(self) -> None:
+        conn = self.get_connection(conn_id=self.conn_id)
+        self.host = conn.host
+        self.headers = conn.extra_dejson
+
+    def _get_response(self, url: str, method: str) -> dict:
+        response = requests.request(method, url, headers=self.headers)
+        response.raise_for_status()
+        response_data = response.text
+        dict_data = json.loads(response_data)
+
+        return dict_data
+    
+    def _trigger_extraction(self, source_id: str, client_id: str) -> dict:
+        self._get_credentials(conn_id=self.conn_id)
+        url = (f'{self.host}/sources/{source_id}/sync')
+        dict_data = self._get_response(url, 'POST', headers=self.headers)
         error = dict_data.get('error', None)
         job_name = dict_data.get('job_name', None)
 
@@ -28,14 +48,13 @@ class StitchHook(SecureHttpHook):
         else:
             logging.info(f'Extraction triggered: source_id = {source_id}, job_name = {job_name}, integration url = https://app.stitchdata.com/client/{client_id}/pipeline/v2/sources/{source_id}/')
 
-    def _monitor_extraction(self, source_id: str, client_id: str, base_url: str, headers: dict[str, str], 
-                            sleep_time: int, timeout: int, start_time: datetime=datetime.now()) -> None:
+    def _monitor_extraction(self, source_id: str, client_id: str, sleep_time=300, timeout=86400, start_time: datetime=datetime.now()) -> None:
         time.sleep(30) # let the job actually trigger
-        url = (f'{base_url}/{client_id}/extractions')
+        url = (f'{self.host}/{client_id}/extractions')
         id_found = False
 
         while (datetime.now() - start_time).seconds < timeout:
-            dict_data = self._get_response(url, 'GET', headers)
+            dict_data = self._get_response(url, 'GET', headers=self.headers)
 
             for item in dict_data['data']:
                 if str(item['source_id']) == source_id:
@@ -46,7 +65,7 @@ class StitchHook(SecureHttpHook):
                     if last_extraction_completion_time < start_time:
                         logging.info(f'Waiting for all extractions to complete: source_id = {source_id}')
                         time.sleep(sleep_time)
-                        url = (f'{base_url}/{client_id}/extractions')   
+                        url = (f'{self.host}/{client_id}/extractions')   
                     elif item['tap_exit_status'] != 0 and item['tap_exit_status'] is not None:
                         raise AirflowException(f'Error: source_id = {source_id} extraction failed')
                     else:
